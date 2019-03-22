@@ -1,13 +1,26 @@
 package coba.sejahtera.pt.movieapp.View.Fragment;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import coba.sejahtera.pt.movieapp.Adapter.MovieAdapter;
+import coba.sejahtera.pt.movieapp.Model.FavoriteDbHelper;
+import coba.sejahtera.pt.movieapp.Model.Movie;
 import coba.sejahtera.pt.movieapp.R;
 
 /**
@@ -27,7 +40,12 @@ public class SavedFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
+    //Tambahan
+    private RecyclerView recyclerView;
+    private MovieAdapter adapter;
+    private List<Movie> MovieList;
+    private SwipeRefreshLayout swipeContainer;
+    private FavoriteDbHelper favoriteDbHelper;
     private OnFragmentInteractionListener mListener;
 
     public SavedFragment() {
@@ -65,7 +83,63 @@ public class SavedFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_saved, container, false);
+        View v = inflater.inflate(R.layout.fragment_saved, container, false);
+
+        recyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
+        initViews2();
+        getAllFavorite();
+        swipeContainer = (SwipeRefreshLayout) v.findViewById(R.id.main_content1);
+        swipeContainer.setColorSchemeResources(android.R.color.holo_orange_dark);
+
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener(){
+            @Override
+            public void onRefresh(){
+                initViews2();
+                getAllFavorite();
+                Toast.makeText(getContext(), "Movies Refreshed", Toast.LENGTH_SHORT).show();
+            }
+
+        });
+        if (swipeContainer.isRefreshing()) {
+            swipeContainer.setRefreshing(false);
+        }
+
+        return v;
+    }
+
+    private void initViews2(){
+
+        MovieList = new ArrayList<>();
+        adapter = new MovieAdapter(getContext(), MovieList);
+
+        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
+        }
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        favoriteDbHelper = new FavoriteDbHelper(getContext());
+
+
+    }
+
+    private void getAllFavorite() {
+        new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params){
+                MovieList.clear();
+                MovieList.addAll(favoriteDbHelper.getAllFavorite());
+                return null;
+            }
+            @Override
+            protected void onPostExecute(Void aVoid){
+                super.onPostExecute(aVoid);
+                adapter.notifyDataSetChanged();
+            }
+        }.execute();
     }
 
     // TODO: Rename method, update argument and hook method into UI event

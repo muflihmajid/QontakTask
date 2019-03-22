@@ -25,9 +25,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // Set up the ViewPager with the sections adapter.
+
+        // Set up the ViewPager with t
+        //        setSupportActionBar(toolbar);he sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         setupViewPager(mViewPager);
         //Set Up tab
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnFr
 
     private void setupViewPager(ViewPager viewPager) {
         SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
-        adapter.addFragment(new HomeFragment(), "For You");
+        adapter.addFragment(new HomeFragment(), "Home");
         adapter.addFragment(new SavedFragment(), "Saved");
         viewPager.setAdapter(adapter);
     }

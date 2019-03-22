@@ -32,7 +32,7 @@
                 android:layout_height="50dp"
                 android:orientation="horizontal">
                 <com.github.ivbaranov.mfb.MaterialFavoriteButton
-                    android:id="@+id/favorite_button"
+                    android:id="@+id/favorite_button1"
                     android:layout_width="10dp"
                     android:layout_height="10dp"
                     android:background="#00FF0000"/>

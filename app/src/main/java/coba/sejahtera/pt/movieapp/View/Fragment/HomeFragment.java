@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -20,6 +23,8 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.github.ivbaranov.mfb.MaterialFavoriteButton;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,12 +33,16 @@ import coba.sejahtera.pt.movieapp.API.Client;
 import coba.sejahtera.pt.movieapp.API.Services;
 import coba.sejahtera.pt.movieapp.Adapter.MovieAdapter;
 import coba.sejahtera.pt.movieapp.BuildConfig;
+import coba.sejahtera.pt.movieapp.Model.FavoriteDbHelper;
 import coba.sejahtera.pt.movieapp.Model.Movie;
 import coba.sejahtera.pt.movieapp.Model.MoviesResponse;
 import coba.sejahtera.pt.movieapp.R;
+import coba.sejahtera.pt.movieapp.View.Activity.detailActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -54,7 +63,13 @@ public class HomeFragment extends Fragment {
     private MovieAdapter adapter;
     private List<Movie> MovieList;
     private SwipeRefreshLayout swipeContainer;
+    private MaterialFavoriteButton materialFavoriteButtonNice;
     ProgressDialog pd;
+    Movie movie;
+    String thumbnail, movieName, synopsis, rating, dateOfRelease;
+    int movie_id;
+    private FavoriteDbHelper favoriteDbHelper;
+    private Movie favorite;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -100,6 +115,7 @@ public class HomeFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
         recyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
+
         initViews();
         loadJSON();
         swipeContainer = (SwipeRefreshLayout) v.findViewById(R.id.main_content);
@@ -108,12 +124,32 @@ public class HomeFragment extends Fragment {
             @Override
             public void onRefresh(){
                 initViews();
+                loadJSON();
                 Toast.makeText(getContext(), "Movies Refreshed", Toast.LENGTH_SHORT).show();
             }
         });
+        if (swipeContainer.isRefreshing()) {
+            swipeContainer.setRefreshing(false);
+        }
+
         return v;
     }
 
+    public void saveFavorite(){
+        favoriteDbHelper = new FavoriteDbHelper(getContext());
+        favorite = new Movie();
+
+        Double rate = movie.getVoteAverage();
+
+
+        favorite.setId(movie_id);
+        favorite.setOriginalTitle(movieName);
+        favorite.setPosterPath(thumbnail);
+        favorite.setVoteAverage(rate);
+        favorite.setOverview(synopsis);
+
+        favoriteDbHelper.addFavorite(favorite);
+    }
     public Activity getActivity1(){
         Context context = getContext();
         while (context instanceof ContextWrapper){
